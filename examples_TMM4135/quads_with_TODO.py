@@ -59,10 +59,10 @@ def quad4_shapefuncs_grad_xsi(xsi, eta):
     """
     # ----- Derivatives of shape functions with respect to xsi -----    
     Ndxi = np.zeros(4)
-    Ndxi[0] = 0.25(1+eta)
-    Ndxi[1] = -0.25(1+eta)
-    Ndxi[2] = -0.25(1-eta)
-    Ndxi[3] = 0.25(1-eta)
+    Ndxi[0] = 0.25*(1+eta)
+    Ndxi[1] = -0.25*(1+eta)
+    Ndxi[2] = -0.25*(1-eta)
+    Ndxi[3] = 0.25*(1-eta)
 
     return Ndxi
 
@@ -74,10 +74,10 @@ def quad4_shapefuncs_grad_eta(xsi, eta):
     # ----- Derivatives of shape functions with respect to eta -----
     # TODO: fill inn values of the  shape functions gradients with respect to xsi
     Ndeta = np.zeros(4)
-    Ndxi[0] = 0.25(1+xsi)
-    Ndxi[0] = 0.25(1-xsi)
-    Ndxi[0] = -0.25(1-xsi)
-    Ndxi[0] = -0.25(1+xsi)
+    Ndxi[0] = 0.25*(1+xsi)
+    Ndxi[0] = 0.25*(1-xsi)
+    Ndxi[0] = -0.25*(1-xsi)
+    Ndxi[0] = -0.25*(1+xsi)
     return Ndeta
 
 
@@ -144,7 +144,11 @@ def quad4e(ex, ey, D, thickness, eq=None):
             #TODO: Fill out correct values for strain displacement matrix at current xsi and eta
             B  = np.zeros((3,8))
             # Flyll inn Nd i B, har dette i notatbok. Fort gjort
-            B[0][0:4]
+            B[0][0:4] = dNdx
+            B[0][4:8] = np.zeros(4)
+            B[1][0:4] = dNdy
+            B[1][4:8] = np.zeros(4)
+   
                 
 
             #TODO: Fill out correct values for displacement interpolation xsi and eta
