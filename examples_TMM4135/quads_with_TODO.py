@@ -45,18 +45,25 @@ def quad4_shapefuncs(xsi, eta):
     Calculates shape functions evaluated at xi, eta
     """
     # ----- Shape functions -----
-    # TODO: fill inn values of the  shape functions
     N = np.zeros(4)
+    N[0] = 0.25*(1+xsi)*(1+eta)
+    N[1] = 0.25*(1-xsi)*(1+eta)
+    N[2] = 0.25*(1-xsi)*(1-eta)
+    N[3] = 0.25*(1+xsi)*(1-eta)
+
     return N
 
 def quad4_shapefuncs_grad_xsi(xsi, eta):
     """
     Calculates derivatives of shape functions wrt. xsi
     """
-    # ----- Derivatives of shape functions with respect to xsi -----
-    # TODO: fill inn values of the  shape functions gradients with respect to xsi
-
+    # ----- Derivatives of shape functions with respect to xsi -----    
     Ndxi = np.zeros(4)
+    Ndxi[0] = 0.25(1+eta)
+    Ndxi[1] = -0.25(1+eta)
+    Ndxi[2] = -0.25(1-eta)
+    Ndxi[3] = 0.25(1-eta)
+
     return Ndxi
 
 
@@ -67,6 +74,10 @@ def quad4_shapefuncs_grad_eta(xsi, eta):
     # ----- Derivatives of shape functions with respect to eta -----
     # TODO: fill inn values of the  shape functions gradients with respect to xsi
     Ndeta = np.zeros(4)
+    Ndxi[0] = 0.25(1+xsi)
+    Ndxi[0] = 0.25(1-xsi)
+    Ndxi[0] = -0.25(1-xsi)
+    Ndxi[0] = -0.25(1+xsi)
     return Ndeta
 
 
@@ -112,14 +123,15 @@ def quad4e(ex, ey, D, thickness, eq=None):
 
             Ndxsi = quad4_shapefuncs_grad_xsi(xsi, eta)
             Ndeta = quad4_shapefuncs_grad_eta(xsi, eta)
-            N1    = quad4_shapefuncs(xsi, eta)  # Collect shape functions evaluated at xi and eta
+            N1    = quad4_shapefuncs(xsi, eta)  # Collect shape functions evaluated at xsi and eta
 
             # Matrix H and G defined according to page 52 of Waløens notes
             H = np.transpose([ex, ey])    # Collect global x- and y coordinates in one matrix
-            G = np.array([Ndxsi, Ndeta])  # Collect gradients of shape function evaluated at xi and eta
+            G = np.array([Ndxsi, Ndeta])  # Collect gradients of shape function evaluated at xsi and eta
 
-            #TODO: Calculate Jacobian, inverse Jacobian and determinant of the Jacobian
-            J = np.eye(2) #TODO: Correct this
+            J = G @ H
+            N_dxsi_and_deta = [Ndxsi, Ndeta]
+            
             invJ = np.linalg.inv(J)  # Inverse of Jacobian
             detJ = np.linalg.det(J)  # Determinant of Jacobian
 
@@ -131,8 +143,12 @@ def quad4e(ex, ey, D, thickness, eq=None):
 
             #TODO: Fill out correct values for strain displacement matrix at current xsi and eta
             B  = np.zeros((3,8))
+            # Flyll inn Nd i B, har dette i notatbok. Fort gjort
+            B[0][0:4]
+                
 
             #TODO: Fill out correct values for displacement interpolation xsi and eta
+            # Aner ikke hvordan jeg gjør dette...
             N2 = np.zeros((2,8))
 
             # Evaluates integrand at current integration points and adds to final solution

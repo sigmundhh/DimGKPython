@@ -52,8 +52,6 @@ def tri3e(ex,ey,D,th,eq=None):
     B = tri3_Bmat(zi_px, zi_py)
     
     Ke = tri3_Kmat(B, D, A, th)
-    print("B", B)
-    print("B.T", B.T)
       
     if eq is None:
         return Ke
