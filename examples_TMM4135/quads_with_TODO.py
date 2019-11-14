@@ -74,13 +74,11 @@ def quad4_shapefuncs_grad_eta(xsi, eta):
     # ----- Derivatives of shape functions with respect to eta -----
     # TODO: fill inn values of the  shape functions gradients with respect to xsi
     Ndeta = np.zeros(4)
-    Ndxi[0] = 0.25*(1+xsi)
-    Ndxi[0] = 0.25*(1-xsi)
-    Ndxi[0] = -0.25*(1-xsi)
-    Ndxi[0] = -0.25*(1+xsi)
+    Ndeta[0] = 0.25*(1+xsi)
+    Ndeta[1] = 0.25*(1-xsi)
+    Ndeta[2] = -0.25*(1-xsi)
+    Ndeta[3] = -0.25*(1+xsi)
     return Ndeta
-
-
 
 
 def quad4e(ex, ey, D, thickness, eq=None):
@@ -128,10 +126,14 @@ def quad4e(ex, ey, D, thickness, eq=None):
             # Matrix H and G defined according to page 52 of Waløens notes
             H = np.transpose([ex, ey])    # Collect global x- and y coordinates in one matrix
             G = np.array([Ndxsi, Ndeta])  # Collect gradients of shape function evaluated at xsi and eta
-
+            print("G: ", G)
+            print("H: ", H)
             J = G @ H
-            N_dxsi_and_deta = [Ndxsi, Ndeta]
+            N_dxsi_and_deta = np.zeros(8)
+            N_dxsi_and_deta[0:4] = Ndxsi
+            N_dxsi_and_deta[4:8] = Ndeta
             
+            print("J: ", J)
             invJ = np.linalg.inv(J)  # Inverse of Jacobian
             detJ = np.linalg.det(J)  # Determinant of Jacobian
 
@@ -147,13 +149,18 @@ def quad4e(ex, ey, D, thickness, eq=None):
             B[0][0:4] = dNdx
             B[0][4:8] = np.zeros(4)
             B[1][0:4] = dNdy
-            B[1][4:8] = np.zeros(4)
-   
+            B[1][4:8] = np.zeros(4)  
+            B[2] = N_dxsi_and_deta 
                 
 
             #TODO: Fill out correct values for displacement interpolation xsi and eta
             # Aner ikke hvordan jeg gjør dette...
+
             N2 = np.zeros((2,8))
+            N2[0][0:4] = N1
+            N2[0][4:8] = np.zeros(4)
+            N2[1][0:4] = np.zeros(4)
+            N2[1][4:8] = N1
 
             # Evaluates integrand at current integration points and adds to final solution
             Ke += (B.T) @ D @ B * detJ * t * gw[iGauss] * gw[jGauss]

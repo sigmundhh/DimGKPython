@@ -7,12 +7,12 @@ Created on Sun Oct 21 16:38:14 2018
 import numpy as np
 import calfem.core as cfc
 import triangles as tri
-import quads as quad
+import quads_with_TODO as quad
 import calfem.vis as cfv
 
 # Element Type
 
-numElementNodes = 9  # Valid numbers 3, 4, 6, 9
+numElementNodes = 4  # Valid numbers 3, 4, 6, 9
 
 elTypeInfo= [-1,'Unknown elementtype']
 
@@ -201,6 +201,7 @@ for iel in range(numElements):
 
     cfc.assem(eldofs[iel],K,K_el,R,f_el)
 
+print("K:", K)
 r, R0 = cfc.solveq(K,R,bc)
 
 nodMiddle = numNodesY//2 +1  # Mid nod on right edge
