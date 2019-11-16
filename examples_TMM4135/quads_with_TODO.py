@@ -203,15 +203,154 @@ def quad9e(ex,ey,D,th,eq=None):
     :return mat fe: consistent load vector [6 x 1] (if eq!=None)
     """
 
-    Ke = np.matrix(np.zeros((18,18)))
-    fe = np.matrix(np.zeros((18,1)))
+    t = th
 
-    # TODO: fill out missing parts (or reformulate completely)
-
-    if eq is None:
-        return Ke
+    if eq is 0:
+        f = np.zeros((2,1))  # Create zero matrix for load if load is zero
     else:
-        return Ke, fe
+        f = np.array([eq]).T  # Convert load to 2x1 matrix
+
+    Ke = np.zeros((18,18))        # Create zero matrix for stiffness matrix
+    fe = np.zeros((18,1))        # Create zero matrix for distributed load
+
+    numGaussPoints = 2  # Number of integration points
+    gp, gw = gauss_points(numGaussPoints)  # Get integration points and -weight
+
+    for iGauss in range(numGaussPoints):  # Solves for K and fe at all integration points
+        for jGauss in range(numGaussPoints):
+
+            xsi = gp[iGauss]
+            eta = gp[jGauss]
+
+            Ndxsi = quad9_shapefuncs_grad_xsi(xsi, eta)
+            Ndeta = quad9_shapefuncs_grad_eta(xsi, eta)
+            N1    = quad9_shapefuncs(xsi, eta)  # Collect shape functions evaluated at xsi and eta
+
+            # Matrix H and G defined according to page 52 of Waløens notes
+            H = np.transpose([ex, ey])    # Collect global x- and y coordinates in one matrix
+            G = np.array([Ndxsi, Ndeta])  # Collect gradients of shape function evaluated at xsi and eta
+            #print("G: ", G)
+            #print("H: ", H)
+            J = G @ H
+            N_dxsi_and_deta = np.zeros(8)
+            N_dxsi_and_deta[0:9] = Ndxsi
+            N_dxsi_and_deta[9:18] = Ndeta
+            
+            #print("J: ", J)
+            invJ = np.linalg.inv(J)  # Inverse of Jacobian
+            detJ = np.linalg.det(J)  # Determinant of Jacobian
+
+            dN = invJ @ G  # Derivatives of shape functions with respect to x and y
+            dNdx = dN[0]
+            dNdy = dN[1]
+
+            # Strain displacement matrix calculated at position xsi, eta
+
+            #TODO: Fill out correct values for strain displacement matrix at current xsi and eta
+            B  = np.zeros((3,18))
+            # Flyll inn Nd i B, har dette i notatbok. Fort gjort
+            """B[0][0:4] = dNdx
+            B[0][4:8] = np.zeros(4)
+            B[1][0:4] = np.zeros(4)
+            B[1][4:8] = dNdy  
+            B[2][0:4] = dNdx
+            B[2][4:8] = dNdy"""
+            
+            N2 = np.zeros((2,18))
+            for k in range(18):
+                if(k%2 == 0):
+                    B[0][k] = dNdx[k//2]
+                    N2[0][k] = N1[k//2] 
+                else:
+                    B[0][k] = 0
+            for k in range(18):
+                if(k%2 == 1):
+                    B[1][k] = dNdy[k//2]
+                    N2[1][k] = N1[k//2]
+                else:
+                    B[1][k] = 0
+                    
+            B[2][0:9] = dNdx
+            B[2][9:18] = dNdy
+            print("N2: ", N2)
+            print("B: ", B)
+            
+            
+
+            #TODO: Fill out correct values for displacement interpolation xsi and eta
+            # Aner ikke hvordan jeg gjør dette...
+
+            """N2 = np.zeros((2,8))
+            N2[0][0:4] = N1
+            N2[0][4:8] = np.zeros(4)
+            N2[1][0:4] = np.zeros(4)
+            N2[1][4:8] = N1"""
+
+            # Evaluates integrand at current integration points and adds to final solution
+            Ke += (B.T) @ D @ B * detJ * t * gw[iGauss] * gw[jGauss]
+            fe += (N2.T) @ f    * detJ * t * gw[iGauss] * gw[jGauss]
+
+    return Ke, fe  # Returns stiffness matrix and nodal force vector
+
+def quad9_shapefuncs(xsi, eta):
+    """
+    Calculates shape functions evaluated at xi, eta
+    """
+    # ----- Shape functions -----
+    N = np.zeros(4)
+    N[0] = 0.25*(1+xsi)*(1+eta) * xsi * eta
+    N[1] = 0.25*(1-xsi)*(1+eta) * xsi * eta
+    N[2] = 0.25*(1-xsi)*(1-eta) * xsi * eta
+    N[3] = 0.25*(1+xsi)*(1-eta) * xsi * eta
+    N[4] = -0.5*(xsi+1)*(xsi-1)*(eta+1) * eta
+    N[5] = -0.5*(eta+1)*(eta-1)*(xsi+1) * xsi
+    N[6] = -0.5*(xsi+1)*(xsi-1)*(eta-1) * eta
+    N[7] = -0.5*(eta+1)*(eta-1)*(xsi-1) * xsi
+    N[8] = (eta+1)*(eta-1)*(xsi+1)*(xsi-1)
+
+    return N
+
+def quad9_shapefuncs_grad_eta(xsi, eta):
+    """
+    Calculates derivatives of shape functions wrt. eta
+    """
+    # ----- Derivatives of shape functions with respect to eta -----
+    # TODO: fill inn values of the  shape functions gradients with respect to xsi
+    Ndeta = np.zeros(4)
+    Ndeta[0] = 0.25*(1+xsi)
+    Ndeta[1] = 0.25*(1-xsi)
+    Ndeta[2] = -0.25*(1-xsi)
+    Ndeta[3] = -0.25*(1+xsi)
+    Ndeta[4] = -0.5*(xsi+1)*(xsi-1)*(2*eta)
+    Ndeta[5] = -(xsi**2)*(eta+1)
+    Ndeta[6] = -0.5*(xsi+1)*(xsi-1)*(2*eta)
+    Ndeta[7] = -(xsi**2)*(eta-1)
+    Ndeta[8] = (xsi+1)*(xsi-1)*(2*eta)
+    
+    
+    return Ndeta
+
+
+def quad9_shapefuncs_grad_xsi(xsi, eta):
+    """
+    Calculates derivatives of shape functions wrt. xsi
+    """
+    # ----- Derivatives of shape functions with respect to xsi -----    
+    Ndxi = np.zeros(4)
+    Ndxi[0] = 0.25*(1+eta)
+    Ndxi[1] = -0.25*(1+eta)
+    Ndxi[2] = -0.25*(1-eta)
+    Ndxi[3] = 0.25*(1-eta)
+    Ndxi[4] = -(eta**2)*(xsi+1)
+    Ndxi[5] = -0.5*(eta+1)*(eta-1)*(2*xsi)
+    Ndxi[6] = -(eta**2)*(xsi+1)
+    Ndxi[7] = -0.5*(eta+1)*(eta-1)*(2*xsi)
+    Ndxi[8] = (eta+1)*(eta-1)*(2*xsi)
+    
+
+    return Ndxi
+
+
 
 
 
