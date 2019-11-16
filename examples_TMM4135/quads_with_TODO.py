@@ -126,14 +126,14 @@ def quad4e(ex, ey, D, thickness, eq=None):
             # Matrix H and G defined according to page 52 of Waløens notes
             H = np.transpose([ex, ey])    # Collect global x- and y coordinates in one matrix
             G = np.array([Ndxsi, Ndeta])  # Collect gradients of shape function evaluated at xsi and eta
-            print("G: ", G)
-            print("H: ", H)
+            #print("G: ", G)
+            #print("H: ", H)
             J = G @ H
             N_dxsi_and_deta = np.zeros(8)
             N_dxsi_and_deta[0:4] = Ndxsi
             N_dxsi_and_deta[4:8] = Ndeta
             
-            print("J: ", J)
+            #print("J: ", J)
             invJ = np.linalg.inv(J)  # Inverse of Jacobian
             detJ = np.linalg.det(J)  # Determinant of Jacobian
 
@@ -146,21 +146,42 @@ def quad4e(ex, ey, D, thickness, eq=None):
             #TODO: Fill out correct values for strain displacement matrix at current xsi and eta
             B  = np.zeros((3,8))
             # Flyll inn Nd i B, har dette i notatbok. Fort gjort
-            B[0][0:4] = dNdx
+            """B[0][0:4] = dNdx
             B[0][4:8] = np.zeros(4)
-            B[1][0:4] = dNdy
-            B[1][4:8] = np.zeros(4)  
-            B[2] = N_dxsi_and_deta 
-                
+            B[1][0:4] = np.zeros(4)
+            B[1][4:8] = dNdy  
+            B[2][0:4] = dNdx
+            B[2][4:8] = dNdy"""
+            
+            N2 = np.zeros((2,8))
+            for k in range(8):
+                if(k%2 == 0):
+                    B[0][k] = dNdx[k//2]
+                    N2[0][k] = N1[k//2] 
+                else:
+                    B[0][k] = 0
+            for k in range(8):
+                if(k%2 == 1):
+                    B[1][k] = dNdy[k//2]
+                    N2[1][k] = N1[k//2]
+                else:
+                    B[1][k] = 0
+                    
+            B[2][0:4] = dNdx
+            B[2][4:8] = dNdy
+            print("N2: ", N2)
+            print("B: ", B)
+            
+            
 
             #TODO: Fill out correct values for displacement interpolation xsi and eta
             # Aner ikke hvordan jeg gjør dette...
 
-            N2 = np.zeros((2,8))
+            """N2 = np.zeros((2,8))
             N2[0][0:4] = N1
             N2[0][4:8] = np.zeros(4)
             N2[1][0:4] = np.zeros(4)
-            N2[1][4:8] = N1
+            N2[1][4:8] = N1"""
 
             # Evaluates integrand at current integration points and adds to final solution
             Ke += (B.T) @ D @ B * detJ * t * gw[iGauss] * gw[jGauss]
