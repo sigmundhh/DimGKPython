@@ -232,7 +232,7 @@ def quad9e(ex,ey,D,th,eq=None):
             #print("G: ", G)
             #print("H: ", H)
             J = G @ H
-            N_dxsi_and_deta = np.zeros(8)
+            N_dxsi_and_deta = np.zeros(18)
             N_dxsi_and_deta[0:9] = Ndxsi
             N_dxsi_and_deta[9:18] = Ndeta
             
@@ -297,7 +297,7 @@ def quad9_shapefuncs(xsi, eta):
     Calculates shape functions evaluated at xi, eta
     """
     # ----- Shape functions -----
-    N = np.zeros(4)
+    N = np.zeros(9)
     N[0] = 0.25*(1+xsi)*(1+eta) * xsi * eta
     N[1] = 0.25*(1-xsi)*(1+eta) * xsi * eta
     N[2] = 0.25*(1-xsi)*(1-eta) * xsi * eta
@@ -316,7 +316,7 @@ def quad9_shapefuncs_grad_eta(xsi, eta):
     """
     # ----- Derivatives of shape functions with respect to eta -----
     # TODO: fill inn values of the  shape functions gradients with respect to xsi
-    Ndeta = np.zeros(4)
+    Ndeta = np.zeros(9)
     Ndeta[0] = 0.25*(1+xsi)
     Ndeta[1] = 0.25*(1-xsi)
     Ndeta[2] = -0.25*(1-xsi)
@@ -336,7 +336,7 @@ def quad9_shapefuncs_grad_xsi(xsi, eta):
     Calculates derivatives of shape functions wrt. xsi
     """
     # ----- Derivatives of shape functions with respect to xsi -----    
-    Ndxi = np.zeros(4)
+    Ndxi = np.zeros(9)
     Ndxi[0] = 0.25*(1+eta)
     Ndxi[1] = -0.25*(1+eta)
     Ndxi[2] = -0.25*(1-eta)
