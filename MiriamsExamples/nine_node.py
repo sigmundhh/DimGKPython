@@ -85,11 +85,7 @@ def plani9e(x,y,D,t,eq=None):
 
 	dNr = np.mat(np.zeros((r2,9)))
 	# Derivert med hensyn på xsi
-	dNr[0:r2:2,0] = (np.multiply(
-		np.multiply(
-			eta,
-			(1+eta)),
-		(1+xsi+xsi)))/4.
+	dNr[0:r2:2,0] = (np.multiply(np.multiply(eta,(1+eta)),(1+xsi+xsi)))/4.
 	dNr[0:r2:2,1] = (np.multiply(np.multiply(eta,(1+eta)),(xsi+xsi-1)))/4.
 	dNr[0:r2:2,2] = (np.multiply(np.multiply(eta,(1-eta)),(1-xsi-xsi)))/4.
 	dNr[0:r2:2,3] = (np.multiply(np.multiply(eta,(1-eta)),(-1-xsi-xsi)))/4.

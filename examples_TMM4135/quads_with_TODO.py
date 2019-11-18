@@ -72,7 +72,6 @@ def quad4_shapefuncs_grad_eta(xsi, eta):
     Calculates derivatives of shape functions wrt. eta
     """
     # ----- Derivatives of shape functions with respect to eta -----
-    # TODO: fill inn values of the  shape functions gradients with respect to xsi
     Ndeta = np.zeros(4)
     Ndeta[0] = 0.25*(1+xsi)
     Ndeta[1] = 0.25*(1-xsi)
@@ -213,7 +212,7 @@ def quad9e(ex,ey,D,th,eq=None):
     Ke = np.zeros((18,18))        # Create zero matrix for stiffness matrix
     fe = np.zeros((18,1))        # Create zero matrix for distributed load
 
-    numGaussPoints = 2  # Number of integration points
+    numGaussPoints = 3  # Number of integration points
     gp, gw = gauss_points(numGaussPoints)  # Get integration points and -weight
 
     for iGauss in range(numGaussPoints):  # Solves for K and fe at all integration points
@@ -299,14 +298,14 @@ def quad9_shapefuncs(xsi, eta):
     # ----- Shape functions -----
     N = np.zeros(9)
     N[0] = 0.25*(1+xsi)*(1+eta) * xsi * eta
-    N[1] = 0.25*(1-xsi)*(1+eta) * xsi * eta
+    N[1] = -0.25*(1-xsi)*(1+eta) * xsi * eta
     N[2] = 0.25*(1-xsi)*(1-eta) * xsi * eta
-    N[3] = 0.25*(1+xsi)*(1-eta) * xsi * eta
-    N[4] = -0.5*(xsi+1)*(xsi-1)*(eta+1) * eta
-    N[5] = -0.5*(eta+1)*(eta-1)*(xsi+1) * xsi
-    N[6] = -0.5*(xsi+1)*(xsi-1)*(eta-1) * eta
-    N[7] = -0.5*(eta+1)*(eta-1)*(xsi-1) * xsi
-    N[8] = (eta+1)*(eta-1)*(xsi+1)*(xsi-1)
+    N[3] = -0.25*(1+xsi)*(1-eta) * xsi * eta
+    N[4] = 0.5*(1+xsi)*(1-xsi)*(1+eta) * eta
+    N[5] = -0.5*(1+eta)*(1-eta)*(1-xsi) * xsi
+    N[6] = -0.5*(1+xsi)*(1-xsi)*(1-eta) * eta
+    N[7] = 0.5*(1+eta)*(1-eta)*(1+xsi) * xsi
+    N[8] = (1+eta)*(1-eta)*(1+xsi)*(1-xsi)
 
     return N
 
@@ -315,19 +314,18 @@ def quad9_shapefuncs_grad_eta(xsi, eta):
     Calculates derivatives of shape functions wrt. eta
     """
     # ----- Derivatives of shape functions with respect to eta -----
-    # TODO: fill inn values of the  shape functions gradients with respect to xsi
+
     Ndeta = np.zeros(9)
-    Ndeta[0] = 0.25*(1+xsi)
-    Ndeta[1] = 0.25*(1-xsi)
-    Ndeta[2] = -0.25*(1-xsi)
-    Ndeta[3] = -0.25*(1+xsi)
-    Ndeta[4] = -0.5*(xsi+1)*(xsi-1)*(2*eta)
-    Ndeta[5] = -(xsi**2)*(eta+1)
-    Ndeta[6] = -0.5*(xsi+1)*(xsi-1)*(2*eta)
-    Ndeta[7] = -(xsi**2)*(eta-1)
-    Ndeta[8] = (xsi+1)*(xsi-1)*(2*eta)
-    
-    
+    Ndeta[0] = 0.25*(1+xsi)*(1+2*eta)*xsi
+    Ndeta[1] = -0.25*(1-xsi)*(1+2*eta)*xsi
+    Ndeta[2] = 0.25*(1-xsi)*(1-2*eta)*xsi
+    Ndeta[3] = -0.25*(1+xsi)*(1-2*eta)*xsi
+    Ndeta[4] = 0.5*(1+xsi)*(1-xsi)*(1+2*eta)
+    Ndeta[5] = -eta*(1-xsi)*xsi
+    Ndeta[6] = -0.5*(1+xsi)*(1-xsi)*(1-2*eta)
+    Ndeta[7] = -eta*(1+xsi)*xsi
+    Ndeta[8] = (-2*eta)*(1-xsi**2)
+
     return Ndeta
 
 
@@ -337,23 +335,14 @@ def quad9_shapefuncs_grad_xsi(xsi, eta):
     """
     # ----- Derivatives of shape functions with respect to xsi -----    
     Ndxi = np.zeros(9)
-    Ndxi[0] = 0.25*(1+eta)
-    Ndxi[1] = -0.25*(1+eta)
-    Ndxi[2] = -0.25*(1-eta)
-    Ndxi[3] = 0.25*(1-eta)
-    Ndxi[4] = -(eta**2)*(xsi+1)
-    Ndxi[5] = -0.5*(eta+1)*(eta-1)*(2*xsi)
-    Ndxi[6] = -(eta**2)*(xsi+1)
-    Ndxi[7] = -0.5*(eta+1)*(eta-1)*(2*xsi)
-    Ndxi[8] = (eta+1)*(eta-1)*(2*xsi)
-    
+    Ndxi[0] = 0.25*(1+2*xsi)*(1+eta)*eta
+    Ndxi[1] = -0.25*(1-2*xsi)*(1+eta)*eta
+    Ndxi[2] = 0.25*(1-2*xsi)*(1-eta)*eta
+    Ndxi[3] = -0.25*(1+2*xsi)*(1-eta)*eta
+    Ndxi[4] = -xsi*(1+eta)*eta
+    Ndxi[5] = -0.5*(1-2*xsi)*(1+eta)*(1-eta)
+    Ndxi[6] = xsi*(1-eta)*eta
+    Ndxi[7] = xsi*(1-eta)*(1+eta)
+    Ndxi[8] = (-2*xsi)*(1-eta**2)
 
     return Ndxi
-
-
-
-
-
-
-
-  
