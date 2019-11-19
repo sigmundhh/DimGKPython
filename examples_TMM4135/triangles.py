@@ -133,13 +133,15 @@ def tri6_shape_function_partials_x_and_y(zeta,ex,ey):
 
     cyclic_ijk = [0,1,2,0,1] # Cyclic permutation of the nodes i,j,k
 
+    print(zeta_px)
+
     for i in range(3):
         j = cyclic_ijk[i+1]
-        k = cyclic_ijk[i+2]
-        N6_px[i] = (4 * zeta[i] - 1)* zeta_px[i]
-        N6_py[i] = (4 * zeta[i] - 1)* zeta_py[i]
-        N6_px[i+3] = 4 * zeta[j] * zeta_px[k] + 4 * zeta[k] * zeta_px[j]
-        N6_py[i + 3] = 4 * zeta[j] * zeta_py[k] + 4 * zeta[k] * zeta_py[j]
+        k = cyclic_ijk[j+1]
+        N6_px[i] = (4 * zeta[0, i] - 1) * zeta_px[i]
+        N6_py[i] = (4 * zeta[0, i] - 1) * zeta_py[i]
+        N6_px[i+3] = 4 * zeta[0, j] * zeta_px[k] + 4 * zeta[0, k] * zeta_px[j]
+        N6_py[i + 3] = 4 * zeta[0, j] * zeta_py[k] + 4 * zeta[0, k] * zeta_py[j]
 
     # TODO: fill out missing parts (or reformulate completely)
 
@@ -170,22 +172,33 @@ def tri6_Kmatrix(ex,ey,D,th,eq=None):
 
     B = tri6_Bmatrix(zetaInt, ex, ey)
     
-    Ke = (B.T * D * B) * A * th
+    Ke = np.zeros((12, 12))
+    fe = np.zeros((12, 1))
 
-    # TODO: fill out missing parts (or reformulate completely)
+    for iG in range(3):
+        zeta = zetaInt[iG]
 
-    if eq is None:
-        return Ke
+        B = tri6_Bmatrix(zeta, ex, ey)
+        Ke += (B.T @ D @ B) * A * th * wInt[iG]
+
+        if eq is not None:
+            fvec = np.array([[eq[0]], [eq[1]]])
+        N6 = tri6_shape_functions(zeta)
+        N2mat = np.zeros((2, 12))
+
+        for i in range(6):
+            N2mat[0, i * 2] = N6[i]
+        N2mat[1, 1 + i * 2] = N6[i]
+
+        fe += N2mat.T @ fvec * A * wInt[iG]
+
+        if eq is None:
+            return Ke
     else:
-        fe = np.matrix(np.zeros((12,1)))
-
-        # TODO: fill out missing parts (or reformulate completely)
-
         return Ke, fe
 
 def tri6e(ex,ey,D,th,eq=None):
     return tri6_Kmatrix(ex,ey,D,th,eq)
-
 
 
 
