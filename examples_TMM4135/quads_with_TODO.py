@@ -275,8 +275,8 @@ def quad9e(ex,ey,D,th,eq=None):
                 else:
                     B[1][k] = 0
                     
-            B[2][0:9] = dNdx
-            B[2][9:18] = dNdy
+            #B[2][0:9] = dNdx
+            #B[2][9:18] = dNdy
             print("N2: ", N2)
             print("B: ", B)
             
@@ -327,7 +327,7 @@ def quad9_shapefuncs_grad_eta(xsi, eta):
     Ndeta[2] = 0.25*(1-xsi)*(1-2*eta)*xsi
     Ndeta[3] = -0.25*(1+xsi)*(1-2*eta)*xsi
     Ndeta[4] = 0.5*(1+xsi)*(1-xsi)*(1+2*eta)
-    Ndeta[5] = -eta*(1-xsi)*xsi
+    Ndeta[5] = eta*(1-xsi)*xsi
     Ndeta[6] = -0.5*(1+xsi)*(1-xsi)*(1-2*eta)
     Ndeta[7] = -eta*(1+xsi)*xsi
     Ndeta[8] = (-2*eta)*(1-xsi**2)

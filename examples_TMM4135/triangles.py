@@ -114,7 +114,12 @@ def tri6_shape_functions(zeta):
 
     N6 = np.zeros(6)
 
-    # TODO: fill out missing parts (or reformulate completely)
+    N6[0] = zeta[0] * (zeta[0] - 0.5) * 2
+    N6[1] = zeta[1] * (zeta[1] - 0.5) * 2
+    N6[2] = zeta[2] * (zeta[2] - 0.5) * 2
+    N6[3] = zeta[0] * zeta[1] * 4
+    N6[4] = zeta[1] * zeta[2] * 4
+    N6[5] = zeta[0] * zeta[2] * 4
 
     return N6
 
@@ -125,8 +130,16 @@ def tri6_shape_function_partials_x_and_y(zeta,ex,ey):
     
     N6_px = np.zeros(6)
     N6_py = np.zeros(6)
-    
-    cyclic_ijk = [0,1,2,0,1]      # Cyclic permutation of the nodes i,j,k
+
+    cyclic_ijk = [0,1,2,0,1] # Cyclic permutation of the nodes i,j,k
+
+    for i in range(3):
+        j = cyclic_ijk[i+1]
+        k = cyclic_ijk[i+2]
+        N6_px[i] = (4 * zeta[i] - 1)* zeta_px[i]
+        N6_py[i] = (4 * zeta[i] - 1)* zeta_py[i]
+        N6_px[i+3] = 4 * zeta[j] * zeta_px[k] + 4 * zeta[k] * zeta_px[j]
+        N6_py[i + 3] = 4 * zeta[j] * zeta_py[k] + 4 * zeta[k] * zeta_py[j]
 
     # TODO: fill out missing parts (or reformulate completely)
 
@@ -135,26 +148,29 @@ def tri6_shape_function_partials_x_and_y(zeta,ex,ey):
 
 def tri6_Bmatrix(zeta,ex,ey):
     
-    nx,ny = tri6_shape_function_partials_x_and_y(zeta, ex, ey)
+    nx, ny = tri6_shape_function_partials_x_and_y(zeta, ex, ey)
 
-    Bmatrix = np.matrix(np.zeros((3,12)))
-
-    # TODO: fill out missing parts (or reformulate completely)
+    Bmatrix = np.matrix([
+        [nx[0], 0, nx[1], 0, nx[2], 0, nx[3], 0, nx[4], 0, nx[5], 0],
+        [0, ny[0], 0, ny[1], 0, ny[2], 0, ny[3], 0, ny[4], 0, ny[5]],
+        [ny[0], nx[0], ny[1], nx[1], ny[2], nx[2], ny[3], nx[3], ny[4], nx[4], ny[5], nx[5]]])
 
     return Bmatrix
 
 
 def tri6_Kmatrix(ex,ey,D,th,eq=None):
     
-    zetaInt = np.array([[0.5,0.5,0.0],
-                        [0.0,0.5,0.5],
-                        [0.5,0.0,0.5]])
+    zetaInt = np.array([[0.5, 0.5, 0.0],
+                        [0.0, 0.5, 0.5],
+                        [0.5, 0.0, 0.5]])
     
-    wInt = np.array([1.0/3.0,1.0/3.0,1.0/3.0])
+    wInt = np.array([1.0/3.0, 1.0/3.0, 1.0/3.0])
 
-    A    = tri6_area(ex,ey)
+    A = tri6_area(ex, ey)
+
+    B = tri6_Bmatrix(zetaInt, ex, ey)
     
-    Ke = np.matrix(np.zeros((12,12)))
+    Ke = (B.T * D * B) * A * th
 
     # TODO: fill out missing parts (or reformulate completely)
 

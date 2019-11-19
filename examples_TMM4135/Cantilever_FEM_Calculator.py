@@ -28,8 +28,8 @@ elif numElementNodes == 9:
 
 # Number of nodes: Should be odd numbers in order to handle
 
-numNodesX = 50
-numNodesY = 20
+numNodesX = 51
+numNodesY = 21
 
 # number of patches that will fit a 9 node element
 numPatchX = (numNodesX-1) // 2
