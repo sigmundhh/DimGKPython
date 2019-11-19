@@ -9,8 +9,8 @@ import calfem.core as cfc
 import quads_with_TODO as quads
 import calfem.vis as cfv
 
-nElx = 40
-nEly = 20
+nElx = 20
+nEly = 10
 
 bDrawMesh = True
 
@@ -20,7 +20,7 @@ L         = 12.5
 thickness = 0.1
 
 # Distributed load in x and y
-eq = np.array([3.0,0.])
+eq = np.array([0,10])
 eqTotal = eq * L * H * thickness
 
 # Material properties and thickness

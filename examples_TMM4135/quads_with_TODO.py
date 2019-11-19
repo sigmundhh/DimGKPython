@@ -127,10 +127,10 @@ def quad4e(ex, ey, D, thickness, eq=None):
             G = np.array([Ndxsi, Ndeta])  # Collect gradients of shape function evaluated at xsi and eta
             #print("G: ", G)
             #print("H: ", H)
-            J = G @ H
-            N_dxsi_and_deta = np.zeros(8)
-            N_dxsi_and_deta[0:4] = Ndxsi
-            N_dxsi_and_deta[4:8] = Ndeta
+            J = np.matmul(G,H)
+            #N_dxsi_and_deta = np.zeros(8)
+            #N_dxsi_and_deta[0:4] = Ndxsi
+            #N_dxsi_and_deta[4:8] = Ndeta
             
             #print("J: ", J)
             invJ = np.linalg.inv(J)  # Inverse of Jacobian
@@ -156,20 +156,24 @@ def quad4e(ex, ey, D, thickness, eq=None):
             for k in range(8):
                 if(k%2 == 0):
                     B[0][k] = dNdx[k//2]
-                    N2[0][k] = N1[k//2] 
+                    N2[0][k] = N1[k//2]
+                    B[2][k] = dNdy[k//2]
                 else:
                     B[0][k] = 0
             for k in range(8):
                 if(k%2 == 1):
                     B[1][k] = dNdy[k//2]
                     N2[1][k] = N1[k//2]
+                    B[2][k] = dNdx[k//2]
                 else:
                     B[1][k] = 0
-                    
-            B[2][0:4] = dNdx
-            B[2][4:8] = dNdy
+
+            #Remove if all is okay
+            #B[2][0:4] = dNdx
+            #B[2][4:8] = dNdy
             print("N2: ", N2)
             print("B: ", B)
+
             
             
 
@@ -230,7 +234,7 @@ def quad9e(ex,ey,D,th,eq=None):
             G = np.array([Ndxsi, Ndeta])  # Collect gradients of shape function evaluated at xsi and eta
             #print("G: ", G)
             #print("H: ", H)
-            J = G @ H
+            J = np.matmul(G,H)
             N_dxsi_and_deta = np.zeros(18)
             N_dxsi_and_deta[0:9] = Ndxsi
             N_dxsi_and_deta[9:18] = Ndeta
@@ -259,13 +263,15 @@ def quad9e(ex,ey,D,th,eq=None):
             for k in range(18):
                 if(k%2 == 0):
                     B[0][k] = dNdx[k//2]
-                    N2[0][k] = N1[k//2] 
+                    N2[0][k] = N1[k//2]
+                    B[2][k] = dNdy[k//2]
                 else:
                     B[0][k] = 0
             for k in range(18):
                 if(k%2 == 1):
                     B[1][k] = dNdy[k//2]
                     N2[1][k] = N1[k//2]
+                    B[2][k] = dNdx[k//2]
                 else:
                     B[1][k] = 0
                     
