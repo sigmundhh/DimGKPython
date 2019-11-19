@@ -114,12 +114,12 @@ def tri6_shape_functions(zeta):
 
     N6 = np.zeros(6)
 
-    N6[0] = zeta[0] * (zeta[0] - 0.5) * 2
-    N6[1] = zeta[1] * (zeta[1] - 0.5) * 2
-    N6[2] = zeta[2] * (zeta[2] - 0.5) * 2
-    N6[3] = zeta[0] * zeta[1] * 4
-    N6[4] = zeta[1] * zeta[2] * 4
-    N6[5] = zeta[0] * zeta[2] * 4
+    N6[0] = zeta[0] * (zeta[0] - 0.5) * 2.0
+    N6[1] = zeta[1] * (zeta[1] - 0.5) * 2.0
+    N6[2] = zeta[2] * (zeta[2] - 0.5) * 2.0
+    N6[3] = zeta[0] * zeta[1] * 4.0
+    N6[4] = zeta[1] * zeta[2] * 4.0
+    N6[5] = zeta[0] * zeta[2] * 4.0
 
     return N6
 
@@ -131,17 +131,14 @@ def tri6_shape_function_partials_x_and_y(zeta,ex,ey):
     N6_px = np.zeros(6)
     N6_py = np.zeros(6)
 
-    cyclic_ijk = [0,1,2,0,1] # Cyclic permutation of the nodes i,j,k
-
-    print(zeta_px)
+    cyclic_ijk = [0, 1, 2, 0, 1] # Cyclic permutation of the nodes i,j,k
 
     for i in range(3):
         j = cyclic_ijk[i+1]
-        k = cyclic_ijk[j+1]
-        N6_px[i] = (4 * zeta[0, i] - 1) * zeta_px[i]
-        N6_py[i] = (4 * zeta[0, i] - 1) * zeta_py[i]
-        N6_px[i+3] = 4 * zeta[0, j] * zeta_px[k] + 4 * zeta[0, k] * zeta_px[j]
-        N6_py[i + 3] = 4 * zeta[0, j] * zeta_py[k] + 4 * zeta[0, k] * zeta_py[j]
+        N6_px[i] = (4 * zeta[i] - 1) * zeta_px[i]
+        N6_py[i] = (4 * zeta[i] - 1) * zeta_py[i]
+        N6_px[i+3] = 4 * zeta[j] * zeta_px[i] + 4 * zeta[i] * zeta_px[j]
+        N6_py[i+3] = 4 * zeta[j] * zeta_py[i] + 4 * zeta[i] * zeta_py[j]
 
     # TODO: fill out missing parts (or reformulate completely)
 
@@ -169,8 +166,6 @@ def tri6_Kmatrix(ex,ey,D,th,eq=None):
     wInt = np.array([1.0/3.0, 1.0/3.0, 1.0/3.0])
 
     A = tri6_area(ex, ey)
-
-    B = tri6_Bmatrix(zetaInt, ex, ey)
     
     Ke = np.zeros((12, 12))
     fe = np.zeros((12, 1))
@@ -183,14 +178,14 @@ def tri6_Kmatrix(ex,ey,D,th,eq=None):
 
         if eq is not None:
             fvec = np.array([[eq[0]], [eq[1]]])
-        N6 = tri6_shape_functions(zeta)
-        N2mat = np.zeros((2, 12))
+            N6 = tri6_shape_functions(zeta)
+            N2mat = np.zeros((2, 12))
 
         for i in range(6):
             N2mat[0, i * 2] = N6[i]
-        N2mat[1, 1 + i * 2] = N6[i]
+            N2mat[1, 1 + i * 2] = N6[i]
 
-        fe += N2mat.T @ fvec * A * wInt[iG]
+            fe += N2mat.T @ fvec * A * wInt[iG]
 
         if eq is None:
             return Ke
