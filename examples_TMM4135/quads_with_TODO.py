@@ -47,8 +47,6 @@ def quad4_shapefuncs(xsi, eta):
     :param float eta : The eta coordinate we're interested in
     :return list N: The four shapefuncions evaluated in the point xsi and eta
     """
-    # ----- Shape functions -----
-    # 
     N = np.zeros(4)
     N[0] = 0.25*(1+xsi)*(1+eta)
     N[1] = 0.25*(1-xsi)*(1+eta)
@@ -148,13 +146,12 @@ def quad4e(ex, ey, D, thickness, eq=None):
 
             dN = invJ @ G            # Derivatives of shape functions with respect to x and y
             dNdx = dN[0]             # Make an own variable with the shapefunction's derivatives wrt. x
-            dNdy = dN[1]             # Make an own variable with the shapefunction's derivatives wrt. x
+            dNdy = dN[1]             # Make an own variable with the shapefunction's derivatives wrt. y
 
-            #Strain displacement matrix at current xsi and eta. 
+            # Strain displacement matrix at current xsi and eta. 
             # We will fill in this matrix as described in theory section of the delivered report
             B  = np.zeros((3,8))
-            
-            #Displacement interpolation xsi and eta
+            # Displacement interpolation xsi and eta
             N2 = np.zeros((2,8))
             
             for k in range(8):
@@ -181,15 +178,19 @@ def quad4e(ex, ey, D, thickness, eq=None):
 
 def quad9e(ex,ey,D,th,eq=None):
     """
-    Compute the stiffness matrix for a four node membrane element.
+    Compute the stiffness matrix and nodal foreces for a nine node membrane element.
 
-    :param list ex: element x coordinates [x1, x2, x3]
-    :param list ey: element y coordinates [y1, y2, y3]
-    :param list D : 2D constitutive matrix
-    :param list th: element thickness
-    :param list eq: distributed loads, local directions [bx, by]
-    :return mat Ke: element stiffness matrix [6 x 6]
-    :return mat fe: consistent load vector [6 x 1] (if eq!=None)
+    :param list ex: element x coordinates [x1 ... x9]
+    :param list ey: element y coordinates [y1 ... y9]
+    :param mat D : Constitutive matrix. 3x3 Matrix describing the relation between stress and strain. 
+    :param float thickness : The thickness of the element
+    :param list eq : [bx, by]   Equidistributed loads on the element in x and y. Has a unit of force pr unit area 
+        bx:     Distributed force in x direction
+        by:     Distributed force in y direction
+
+    :return mat Ke : Stiffness matrix for the element (8 x 8)
+    :return mat fe : equivalent nodal forces (8 x 1)
+
     """
 
     t = th
@@ -208,9 +209,12 @@ def quad9e(ex,ey,D,th,eq=None):
     for iGauss in range(numGaussPoints):  # Solves for K and fe at all integration points
         for jGauss in range(numGaussPoints):
 
+            # The current postition in (xsi, eta) space
             xsi = gp[iGauss]
             eta = gp[jGauss]
 
+            # Determine the values of the shapefunctions and their derivatives at the current position
+            # wrt. xsi and eta
             Ndxsi = quad9_shapefuncs_grad_xsi(xsi, eta)
             Ndeta = quad9_shapefuncs_grad_eta(xsi, eta)
             N1    = quad9_shapefuncs(xsi, eta)  # Collect shape functions evaluated at xsi and eta
@@ -218,34 +222,26 @@ def quad9e(ex,ey,D,th,eq=None):
             # Matrix H and G defined according to page 52 of Waløens notes
             H = np.transpose([ex, ey])    # Collect global x- and y coordinates in one matrix
             G = np.array([Ndxsi, Ndeta])  # Collect gradients of shape function evaluated at xsi and eta
-            #print("G: ", G)
-            #print("H: ", H)
+
+            # The Jacobian matrix is obtained by a matrix multiplacation between G and H
             J = np.matmul(G,H)
             N_dxsi_and_deta = np.zeros(18)
-            N_dxsi_and_deta[0:9] = Ndxsi
-            N_dxsi_and_deta[9:18] = Ndeta
-            
-            #print("J: ", J)
+
+            # Determine the inverse of the Jacobian and its determinant. 
+            # We need this to find the the derivative of the shape functions wrt. x and 
             invJ = np.linalg.inv(J)  # Inverse of Jacobian
             detJ = np.linalg.det(J)  # Determinant of Jacobian
 
             dN = invJ @ G  # Derivatives of shape functions with respect to x and y
-            dNdx = dN[0]
-            dNdy = dN[1]
+            dNdx = dN[0]   # Make an own variable with the shapefunction's derivatives wrt. x
+            dNdy = dN[1]   # Make an own variable with the shapefunction's derivatives wrt. y
 
             # Strain displacement matrix calculated at position xsi, eta
-
-            #TODO: Fill out correct values for strain displacement matrix at current xsi and eta
+            # We will fill in this matrix as described in theory section of the delivered report
             B  = np.zeros((3,18))
-            # Flyll inn Nd i B, har dette i notatbok. Fort gjort
-            """B[0][0:4] = dNdx
-            B[0][4:8] = np.zeros(4)
-            B[1][0:4] = np.zeros(4)
-            B[1][4:8] = dNdy  
-            B[2][0:4] = dNdx
-            B[2][4:8] = dNdy"""
-            
+            # Displacement interpolation xsi and eta
             N2 = np.zeros((2,18))
+
             for k in range(18):
                 if(k%2 == 0):
                     B[0][k] = dNdx[k//2]
@@ -260,32 +256,19 @@ def quad9e(ex,ey,D,th,eq=None):
                     B[2][k] = dNdx[k//2]
                 else:
                     B[1][k] = 0
-                    
-            #B[2][0:9] = dNdx
-            #B[2][9:18] = dNdy
-            print("N2: ", N2)
-            print("B: ", B)
-            
-            
-
-            #TODO: Fill out correct values for displacement interpolation xsi and eta
-            # Aner ikke hvordan jeg gjør dette...
-
-            """N2 = np.zeros((2,8))
-            N2[0][0:4] = N1
-            N2[0][4:8] = np.zeros(4)
-            N2[1][0:4] = np.zeros(4)
-            N2[1][4:8] = N1"""
 
             # Evaluates integrand at current integration points and adds to final solution
-            Ke += (B.T) @ D @ B * detJ * t * gw[iGauss] * gw[jGauss]
-            fe += (N2.T) @ f    * detJ * t * gw[iGauss] * gw[jGauss]
+            Ke += (B.T) @ D @ B * detJ * t * gw[iGauss] * gw[jGauss] # Add the term for this point to the sum
+            fe += (N2.T) @ f    * detJ * t * gw[iGauss] * gw[jGauss] # Add the term for this point to the sum
 
     return Ke, fe  # Returns stiffness matrix and nodal force vector
 
 def quad9_shapefuncs(xsi, eta):
     """
-    Calculates shape functions evaluated at xi, eta
+    Calculates shape functions evaluated at xsi, eta
+    :param float xsi : The xsi coordinate we're interested in
+    :param float eta : The eta coordinate we're interested in
+    :return list N: The nine shapefuncions evaluated in the point xsi and eta
     """
     # ----- Shape functions -----
     N = np.zeros(9)
@@ -304,12 +287,11 @@ def quad9_shapefuncs(xsi, eta):
 def quad9_shapefuncs_grad_eta(xsi, eta):
     """
     Calculates derivatives of shape functions wrt. eta
-    
-    :param float xsi : 
-    :param float eta : 
-    :return mat Ndeta: 
+    :param float xsi : The xsi coordinate we're interested in
+    :param float eta : The eta coordinate we're interested in
+    :return list Ndeta: The nine shapefuncions derivatives with 
+                        respect to eta in the point (xsi, eta)
     """
-    # ----- Derivatives of shape functions with respect to eta -----
 
     Ndeta = np.zeros(9)
     Ndeta[0] = 0.25*(1+xsi)*(1+2*eta)*xsi
@@ -328,8 +310,12 @@ def quad9_shapefuncs_grad_eta(xsi, eta):
 def quad9_shapefuncs_grad_xsi(xsi, eta):
     """
     Calculates derivatives of shape functions wrt. xsi
-    """
-    # ----- Derivatives of shape functions with respect to xsi -----    
+    
+    :param float xsi : The xsi coordinate we're interested in
+    :param float eta : The eta coordinate we're interested in
+    :return list Ndeta: The nine shapefuncions derivatives with 
+                        respect to xsi in the point (xsi, eta)
+    """   
     Ndxi = np.zeros(9)
     Ndxi[0] = 0.25*(1+2*xsi)*(1+eta)*eta
     Ndxi[1] = -0.25*(1-2*xsi)*(1+eta)*eta
