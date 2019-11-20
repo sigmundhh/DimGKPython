@@ -217,6 +217,7 @@ for k in range(len(elementTypes)):
         #Add the end displacement to a list
         print("yC!: ", yC)
         endDisps.append(yC)
+        numElementsList.append(numElements)
         
         # Sum uf reaction forces
         R0Sum = np.zeros(2,'f')
@@ -247,7 +248,8 @@ for k in range(len(elementTypes)):
                 title=elTypeInfo[1])
         
             cfv.showAndWait()
-            numElementsList.apppend(numElements)
+            
+    print("numElemList: ", numElementsList, "endDisps: ", endDisps)
     plt.plot(numElementsList, endDisps)
     plt.legend()
     endDisps = []
