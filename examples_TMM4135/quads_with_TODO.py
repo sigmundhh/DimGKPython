@@ -217,12 +217,12 @@ def quad9e(ex,ey,D,th,eq=None):
     t = th
 
     if eq is 0:
-        f = np.zeros((2,1))  # Create zero matrix for load if load is zero
+        f = np.zeros((2, 1))  # Create zero matrix for load if load is zero
     else:
         f = np.array([eq]).T  # Convert load to 2x1 matrix
 
-    Ke = np.zeros((18,18))        # Create zero matrix for stiffness matrix
-    fe = np.zeros((18,1))        # Create zero matrix for distributed load
+    Ke = np.zeros((18, 18))        # Create zero matrix for stiffness matrix
+    fe = np.zeros((18, 1))        # Create zero matrix for distributed load
 
     numGaussPoints = 3  # Number of integration points
     gp, gw = gauss_points(numGaussPoints)  # Get integration points and -weight
