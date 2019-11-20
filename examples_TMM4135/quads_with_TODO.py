@@ -42,10 +42,10 @@ def gauss_points(iRule):
 
 def quad4_shapefuncs(xsi, eta):
     """
-    Calculates shape functions evaluated at xi, eta
-    :param list xsi : The xsi coordinate we're interested in
-    :param list eta : The eta coordinate we're interested in
-    :return mat Ndeta:
+    Calculates shape functions evaluated at xsi, eta
+    :param float xsi : The xsi coordinate we're interested in
+    :param float eta : The eta coordinate we're interested in
+    :return list N: The four shapefuncions evaluated in the point xsi and eta
     """
     # ----- Shape functions -----
     # 
@@ -61,11 +61,11 @@ def quad4_shapefuncs_grad_xsi(xsi, eta):
     """
     Calculates derivatives of shape functions wrt. xsi
     
-    :param list xsi : 
-    :param list eta : 
-    :return mat Ndeta:
-    """
-    # ----- Derivatives of shape functions with respect to xsi -----    
+    :param float xsi : The xsi coordinate we're interested in
+    :param float eta : The eta coordinate we're interested in
+    :return list Ndeta: The four shapefuncions derivatives with 
+                        respect to xsi in the point (xsi, eta)
+    """  
     Ndxi = np.zeros(4)
     Ndxi[0] = 0.25*(1+eta)
     Ndxi[1] = -0.25*(1+eta)
@@ -78,8 +78,11 @@ def quad4_shapefuncs_grad_xsi(xsi, eta):
 def quad4_shapefuncs_grad_eta(xsi, eta):
     """
     Calculates derivatives of shape functions wrt. eta
+    :param float xsi : The xsi coordinate we're interested in
+    :param float eta : The eta coordinate we're interested in
+    :return list Ndeta: The four shapefuncions derivatives with 
+                        respect to eta in the point (xsi, eta)
     """
-    # ----- Derivatives of shape functions with respect to eta -----
     Ndeta = np.zeros(4)
     Ndeta[0] = 0.25*(1+xsi)
     Ndeta[1] = 0.25*(1-xsi)
@@ -92,23 +95,21 @@ def quad4e(ex, ey, D, thickness, eq=None):
     """
     Calculates the stiffness matrix for a 8 node isoparametric element in plane stress
 
-    Parameters:
+    :param list ex : [x1 ... x4] The element x-coordinates of the four corners
+    :param list ey : [y1 ... y4] The element y-coordinates of the four corners
+    :param mat D : Constitutive matrix. 3x3 Matrix describing the relation between stress and strain. 
+    :param float thickness : The thickness of the element
+    :param list eq : [bx, by]   Equidistributed loads on the element in x and y. Has a unit of force pr unit area 
+        bx:     Distributed force in x direction
+        by:     Distributed force in y direction
 
-        ex  = [x1 ... x4]           Element coordinates. Row matrix
-        ey  = [y1 ... y4]
-        D   =           Constitutive matrix
-        thickness:      Element thickness
-        eq = [bx; by]       bx:     body force in x direction
-                            by:     body force in y direction
-
-    Returns:
-
-        Ke : element stiffness matrix (8 x 8)
-        fe : equivalent nodal forces (4 x 1)
+    :return mat Ke : Stiffness matrix for the element (8 x 8)
+    :return mat fe : equivalent nodal forces (8 x 1)
 
     """
     t = thickness
 
+    # Make the load vector ready for intergration
     if eq is 0:
         f = np.zeros((2,1))  # Create zero matrix for load if load is zero
     else:
@@ -122,10 +123,13 @@ def quad4e(ex, ey, D, thickness, eq=None):
 
     for iGauss in range(numGaussPoints):  # Solves for K and fe at all integration points
         for jGauss in range(numGaussPoints):
-
+            
+            # The current postition in (xsi, eta) space
             xsi = gp[iGauss]
             eta = gp[jGauss]
-
+            
+            # Determine the values of the shapefunctions and their derivatives at the current position
+            # wrt. xsi and eta
             Ndxsi = quad4_shapefuncs_grad_xsi(xsi, eta)
             Ndeta = quad4_shapefuncs_grad_eta(xsi, eta)
             N1    = quad4_shapefuncs(xsi, eta)  # Collect shape functions evaluated at xsi and eta
@@ -133,34 +137,26 @@ def quad4e(ex, ey, D, thickness, eq=None):
             # Matrix H and G defined according to page 52 of Waløens notes
             H = np.transpose([ex, ey])    # Collect global x- and y coordinates in one matrix
             G = np.array([Ndxsi, Ndeta])  # Collect gradients of shape function evaluated at xsi and eta
-            #print("G: ", G)
-            #print("H: ", H)
+
+            # The Jacobian matrix is obtained by a matrix multiplacation between G and H
             J = np.matmul(G,H)
-            #N_dxsi_and_deta = np.zeros(8)
-            #N_dxsi_and_deta[0:4] = Ndxsi
-            #N_dxsi_and_deta[4:8] = Ndeta
             
-            #print("J: ", J)
+            # Determine the inverse of the Jacobian and its determinant. 
+            # We need this to find the the derivative of the shape functions wrt. x and y
             invJ = np.linalg.inv(J)  # Inverse of Jacobian
             detJ = np.linalg.det(J)  # Determinant of Jacobian
 
-            dN = invJ @ G  # Derivatives of shape functions with respect to x and y
-            dNdx = dN[0]
-            dNdy = dN[1]
+            dN = invJ @ G            # Derivatives of shape functions with respect to x and y
+            dNdx = dN[0]             # Make an own variable with the shapefunction's derivatives wrt. x
+            dNdy = dN[1]             # Make an own variable with the shapefunction's derivatives wrt. x
 
-            # Strain displacement matrix calculated at position xsi, eta
-
-            #TODO: Fill out correct values for strain displacement matrix at current xsi and eta
+            #Strain displacement matrix at current xsi and eta. 
+            # We will fill in this matrix as described in theory section of the delivered report
             B  = np.zeros((3,8))
-            # Flyll inn Nd i B, har dette i notatbok. Fort gjort
-            """B[0][0:4] = dNdx
-            B[0][4:8] = np.zeros(4)
-            B[1][0:4] = np.zeros(4)
-            B[1][4:8] = dNdy  
-            B[2][0:4] = dNdx
-            B[2][4:8] = dNdy"""
             
+            #Displacement interpolation xsi and eta
             N2 = np.zeros((2,8))
+            
             for k in range(8):
                 if(k%2 == 0):
                     B[0][k] = dNdx[k//2]
@@ -175,25 +171,7 @@ def quad4e(ex, ey, D, thickness, eq=None):
                     B[2][k] = dNdx[k//2]
                 else:
                     B[1][k] = 0
-
-            #Remove if all is okay
-            #B[2][0:4] = dNdx
-            #B[2][4:8] = dNdy
-            print("N2: ", N2)
-            print("B: ", B)
-
             
-            
-
-            #TODO: Fill out correct values for displacement interpolation xsi and eta
-            # Aner ikke hvordan jeg gjør dette...
-
-            """N2 = np.zeros((2,8))
-            N2[0][0:4] = N1
-            N2[0][4:8] = np.zeros(4)
-            N2[1][0:4] = np.zeros(4)
-            N2[1][4:8] = N1"""
-
             # Evaluates integrand at current integration points and adds to final solution
             Ke += (B.T) @ D @ B * detJ * t * gw[iGauss] * gw[jGauss]
             fe += (N2.T) @ f    * detJ * t * gw[iGauss] * gw[jGauss]
