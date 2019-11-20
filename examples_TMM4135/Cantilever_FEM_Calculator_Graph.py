@@ -258,6 +258,7 @@ for k in range(len(elementTypes)):
 plt.ylabel('Displacement [mm]')
 plt.xlabel('Number of nodes')
 plt.title('Convergence of different element types')
+plt.savefig("convergence_plot.png", format='eps')
 plt.show()
         
     

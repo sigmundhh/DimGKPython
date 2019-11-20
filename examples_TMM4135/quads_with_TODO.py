@@ -48,6 +48,7 @@ def quad4_shapefuncs(xsi, eta):
     :return mat Ndeta:
     """
     # ----- Shape functions -----
+    # 
     N = np.zeros(4)
     N[0] = 0.25*(1+xsi)*(1+eta)
     N[1] = 0.25*(1-xsi)*(1+eta)
