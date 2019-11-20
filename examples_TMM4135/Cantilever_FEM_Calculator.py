@@ -12,7 +12,8 @@ import calfem.vis as cfv
 
 # Element Type
 
-numElementNodes = 6  # Valid numbers 3, 4, 6, 9
+numElementNodes = 9
+# Valid numbers 3, 4, 6, 9
 
 elTypeInfo= [-1,'Unknown elementtype']
 

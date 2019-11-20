@@ -348,7 +348,7 @@ def quad9_shapefuncs_grad_xsi(xsi, eta):
     Ndxi[4] = -xsi*(1+eta)*eta
     Ndxi[5] = -0.5*(1-2*xsi)*(1+eta)*(1-eta)
     Ndxi[6] = xsi*(1-eta)*eta
-    Ndxi[7] = xsi*(1-eta)*(1+eta)
+    Ndxi[7] = 0.5*(1-eta)*(1+eta)*(1+2*xsi)
     Ndxi[8] = (-2*xsi)*(1-eta**2)
 
     return Ndxi
