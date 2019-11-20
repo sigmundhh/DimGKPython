@@ -270,7 +270,6 @@ def quad9_shapefuncs(xsi, eta):
     :param float eta : The eta coordinate we're interested in
     :return list N: The nine shapefuncions evaluated in the point xsi and eta
     """
-    # ----- Shape functions -----
     N = np.zeros(9)
     N[0] = 0.25*(1+xsi)*(1+eta) * xsi * eta
     N[1] = -0.25*(1-xsi)*(1+eta) * xsi * eta
