@@ -43,6 +43,9 @@ def gauss_points(iRule):
 def quad4_shapefuncs(xsi, eta):
     """
     Calculates shape functions evaluated at xi, eta
+    :param list xsi : The xsi coordinate we're interested in
+    :param list eta : The eta coordinate we're interested in
+    :return mat Ndeta:
     """
     # ----- Shape functions -----
     N = np.zeros(4)
@@ -56,6 +59,10 @@ def quad4_shapefuncs(xsi, eta):
 def quad4_shapefuncs_grad_xsi(xsi, eta):
     """
     Calculates derivatives of shape functions wrt. xsi
+    
+    :param list xsi : 
+    :param list eta : 
+    :return mat Ndeta:
     """
     # ----- Derivatives of shape functions with respect to xsi -----    
     Ndxi = np.zeros(4)
@@ -318,6 +325,10 @@ def quad9_shapefuncs(xsi, eta):
 def quad9_shapefuncs_grad_eta(xsi, eta):
     """
     Calculates derivatives of shape functions wrt. eta
+    
+    :param float xsi : 
+    :param float eta : 
+    :return mat Ndeta: 
     """
     # ----- Derivatives of shape functions with respect to eta -----
 
