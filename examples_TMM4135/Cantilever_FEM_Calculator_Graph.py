@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 
 
 # Iterate through procedure with all element types
-elementTypes = [3,4,9]
+elementTypes = [3,4,6,9]
 #List of end displacements
 endDisps = []
 numElementsList = []
@@ -250,11 +250,14 @@ for k in range(len(elementTypes)):
             cfv.showAndWait()
             
     print("numElemList: ", numElementsList, "endDisps: ", endDisps)
-    plt.plot(numElementsList, endDisps)
+    plt.plot(numElementsList, endDisps, label=str(numElementNodes) + " nodal elements" )
+   
     plt.legend()
     endDisps = []
     numElementsList = []
-    
+plt.ylabel('Displacement [mm]')
+plt.xlabel('Number of nodes')
+plt.title('Convergence of different element types')
 plt.show()
         
     
